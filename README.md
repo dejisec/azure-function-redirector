@@ -1,6 +1,6 @@
 # Azure Function Redirector
 
-Acts as a proxy to redirect requests to a target URL (i.e C2 server).
+Acts as a proxy to redirect requests to a target URL (e.g., C2 server).
 
 ## Prerequisites
 
@@ -10,72 +10,92 @@ Acts as a proxy to redirect requests to a target URL (i.e C2 server).
 - Python 3.11+
 - Azure Subscription
 
-## Usage
+## Deployment
 
-1. Configure Azure CLI:
+1. Sign in and select your subscription:
 
-```bash
-az login
-az account set --subscription <subscription_id>
-```
+    ```bash
+    az login
+    az account set --subscription <subscription_id>
+    ```
 
-2. Initialize Terraform:
+2. Prepare variables:
 
-```bash
-cd terraform
-terraform init
-```
+    ```bash
+    make prepare
+    vi terraform/terraform.tfvars
+    ```
 
-3. Create a `terraform.tfvars` file:
+3. Deploy infra and publish code:
 
-```hcl
-subscription_id = "<subscription_id>"
-# URIs in C2 profile should match the Azure Function URL
-teamserver_post_url = "https://your-c2-domain.com/api/post"
-teamserver_get_url = "https://your-c2-domain.com/api/get"
-web_server_url = "http://example.com"
-```
+    ```bash
+    make all
+    ```
 
-4. Update variables in `terraform/variables.tf`:
+This runs: `terraform init`, `terraform plan`, `terraform apply -auto-approve`, publishes the function app, and prints outputs.
 
-- `location`: Azure region (default: East US)
-- `resource_group_name`: Resource group name
-- `function_app_name`: Function app name
-- `storage_account_name`: Storage account name
-
-5. Deploy the infrastructure:
+To destroy:
 
 ```bash
-terraform plan
-terraform apply
+make destroy
 ```
 
-6. Deploy the function code:
+### Endpoints
+
+- `GET /api/get` → proxies to `TEAMSERVER_GET_URL`
+- `POST /api/post` → proxies to `TEAMSERVER_POST_URL`
+- `ANY /api/web` → proxies to `WEB_SERVER_URL`
+- `ANY /api/web/{*path}` → proxies to `WEB_SERVER_URL/{path}`
+
+### Configuration
+
+App settings:
+
+- `TEAMSERVER_GET_URL`
+- `TEAMSERVER_POST_URL`
+- `WEB_SERVER_URL`
+- `ALLOW_INSECURE_SSL` ("true" to disable SSL verification for `/api/web`; default "false")
+- `TEAMSERVER_GET_ROUTE` (default: `get`)
+- `TEAMSERVER_POST_ROUTE` (default: `post`)
+- `WEB_ROUTE_BASE` (default: `web`)
+
+### Notes
+
+- Plan: App Service Basic plan (B1). HTTPS-only, TLS 1.2+, HTTP/2.
+- The proxy strips hop-by-hop headers and adds `X-Forwarded-For` when a valid client IP is present.
+
+## Helpers
+
+Handy targets after deploy (they use current Terraform outputs):
 
 ```bash
-cd ../function
-func azure functionapp publish <function_app_name> --build remote
+# Possible outbound public IPs used by the Function App
+make info
+
+# Default hostname of the Function App
+make hostname
+
+# List HTTP-triggered functions with constructed URLs
+make routes
+
+# Provision a StorageV2 account with static website enabled and print its endpoint
+# Optionally pass a name: STORAGE_NAME must be globally unique
+make storage-website STORAGE_NAME=mystaticweb123
+make storage-website
+
+### Pre-deployment: set route prefix
+
+Override the `routePrefix` in `function/host.json` before publishing:
+
+```bash
+# One-off edit
+make set-route-prefix ROUTE_PREFIX=myapi
+
+# Or inline during publish
+make publish ROUTE_PREFIX=myapi
 ```
 
-## Azure Function Settings
-
-- Authentication Level: Anonymous
-- Worker Runtime: Python 3.11
-- Service Plan: Linux B1 (Basic)
-- HTTPS Only: Enabled
-- TLS Version: 1.2 minimum
-
-## Infrastructure
-
-The Terraform configuration creates:
-
-- Resource Group
-- Storage Account
-- App Service Plan (Consumption)
-- Function App
-- Function Code Deployment
-
-## **Credits**
+### Credits
 
 - [FunctionalC2](https://github.com/RedSiege/FunctionalC2)
 - [Azure Functions with Terraform](https://cloudengineerskills.com/posts/azure-functions-terraform/)

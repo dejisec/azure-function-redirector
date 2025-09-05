@@ -21,7 +21,7 @@ variable "app_service_plan_name" {
 
 variable "function_app_name" {
   description = "Name of the Function App"
-  default     = "example-function-app"  # must be globally unique
+  default     = "example-function-app" # must be globally unique
 }
 
 variable "subscription_id" {
@@ -48,4 +48,25 @@ variable "teamserver_get_url" {
 variable "web_server_url" {
   description = "URL for the Web Server"
   type        = string
+}
+
+# Function routes and route prefix
+variable "route_prefix" {
+  description = "HTTP extension routePrefix in host.json"
+  default     = "api"
+}
+
+variable "teamserver_get_route" {
+  description = "Route for GET teamserver endpoint"
+  default     = "get"
+}
+
+variable "teamserver_post_route" {
+  description = "Route for POST teamserver endpoint"
+  default     = "post"
+}
+
+variable "web_route_base" {
+  description = "Base route for web forwarder (and wildcard)"
+  default     = "web"
 }

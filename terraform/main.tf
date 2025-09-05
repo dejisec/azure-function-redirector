@@ -18,7 +18,7 @@ resource "azurerm_storage_account" "storage" {
   account_replication_type = "LRS"
 }
 
-# App Service Plan (updated resource)
+# App Service Plan
 resource "azurerm_service_plan" "plan" {
   name                = var.app_service_plan_name
   location            = azurerm_resource_group.rg.location
@@ -28,9 +28,9 @@ resource "azurerm_service_plan" "plan" {
   worker_count        = 3
 }
 
-# Function App (updated to new resource)
+# Function App
 resource "azurerm_linux_function_app" "function" {
-  depends_on = [ azurerm_storage_account.storage ]
+  depends_on = [azurerm_storage_account.storage]
 
   name                       = var.function_app_name
   resource_group_name        = azurerm_resource_group.rg.name
@@ -38,18 +38,18 @@ resource "azurerm_linux_function_app" "function" {
   service_plan_id            = azurerm_service_plan.plan.id
   storage_account_name       = azurerm_storage_account.storage.name
   storage_account_access_key = azurerm_storage_account.storage.primary_access_key
-  https_only                = true
+  https_only                 = true
 
   site_config {
     application_stack {
       python_version = "3.11"
     }
-    
-    minimum_tls_version     = "1.2"
-    ftps_state             = "Disabled"
-    http2_enabled          = true
+
+    minimum_tls_version      = "1.2"
+    ftps_state               = "Disabled"
     elastic_instance_minimum = 3
-    always_on              = true
+    http2_enabled            = true
+    always_on                = true
   }
 
   app_settings = {
@@ -62,5 +62,8 @@ resource "azurerm_linux_function_app" "function" {
     "TEAMSERVER_POST_URL"                       = var.teamserver_post_url
     "TEAMSERVER_GET_URL"                        = var.teamserver_get_url
     "WEB_SERVER_URL"                            = var.web_server_url
+    "TEAMSERVER_GET_ROUTE"                      = var.teamserver_get_route
+    "TEAMSERVER_POST_ROUTE"                     = var.teamserver_post_route
+    "WEB_ROUTE_BASE"                            = var.web_route_base
   }
 }

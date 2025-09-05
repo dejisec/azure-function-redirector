@@ -1,3 +1,23 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Azure Functions local
+function/.python_packages/
+function/bin/
+function/obj/
+function/.vscode/
+function/local.settings.json
+
+# Terraform
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/*.tfvars
+terraform/*tfplan*
 function/.vscode/extensions.json
 function/.funcignore
 function/local.settings.json

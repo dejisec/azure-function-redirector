@@ -1,0 +1,20 @@
+subscription_id     = "00000000-0000-0000-0000-000000000000"
+resource_group_name = "functionapp-resources"
+location            = "East US"
+function_app_name   = "example-function-app-1234" # must be globally unique
+storage_account_name = "funcstor123456"          # must be globally unique
+app_service_plan_name = "functionapp-service-plan"
+
+# URIs in C2 profile should match the Azure Function URL
+teamserver_post_url = "https://your-c2-domain.com/api/post"
+teamserver_get_url  = "https://your-c2-domain.com/api/get"
+
+# Base upstream site for /api/<web_route_base> and wildcard
+web_server_url = "http://example.com"
+
+# Optional: routing
+# route_prefix         = "api"
+# teamserver_get_route  = "get"
+# teamserver_post_route = "post"
+# web_route_base        = "web"
+
